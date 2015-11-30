@@ -13,6 +13,9 @@ import time      # timed part of timed/ automata
 import pyttsx    # voice speaks to us
 import os        # for exiting
 
+from state import State
+
+
 defs = __import__(sys.argv[3])
 # use python verifier.py state.config init_state
 
@@ -84,7 +87,8 @@ class State:
             do_every(time_rem/2,    warn ,   cur_state,   2)
             do_every(time_rem - 5 , alert,   cur_state,   2)
             do_every(time_rem,      error_a, cur_state,   2)
-        
+
+
 def do_every(interval, worker_func, cur_state,iterations = 0):
     if iterations !=1:
         threading.Timer (
@@ -194,6 +198,7 @@ def find_state(name):
 
 def exit(s):
     print('Cleaning up. \n Exiting....')
+    say('goodbye')
     os._exit(-1)
     sys.exit('Cleaning up. \n Exiting....')
    
@@ -246,10 +251,11 @@ while True:
     ins = listen()
     say("new input provided: %s" % ins)
     line= ins.split()
+    s_id= find_state(cur_state)
     try:
         a = line[0]
         method_to_call = getattr(defs, a)
-        method_to_call(line)
+        method_to_call(line, states, s_id)
     except AttributeError:
         print('not found in custom trying local functions')
         try:
