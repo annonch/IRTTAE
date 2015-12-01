@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 ##########################
 #  channon@hawk.iit.edu  #
 ##########################
@@ -12,9 +13,6 @@ import sys       # argv access
 import time      # timed part of timed/ automata
 import pyttsx    # voice speaks to us
 import os        # for exiting
-
-from state import State
-
 
 defs = __import__(sys.argv[3])
 # use python verifier.py state.config init_state
@@ -84,6 +82,7 @@ class State:
             time_rem = self.time_max - time_elps
             print('now: %s, elps: %s, rem: %s'
                   % (now,time_elps,time_rem))
+            print('setting reminders')
             do_every(time_rem/2,    warn ,   cur_state,   2)
             do_every(time_rem - 5 , alert,   cur_state,   2)
             do_every(time_rem,      error_a, cur_state,   2)
@@ -103,9 +102,10 @@ def warn(s):
     if s != cur_state:
         return 0
     s_id = find_state(cur_state)
-    say('Warning, the time is getting close to transition out of state: %s'
-          % ( states[s_id].name  ) )
     print('Warning, the time is getting close to transition out of state: %s'
+          % ( states[s_id].name  ) )
+    
+    say('Warning, the time is getting close to transition out of state: %s'
           % ( states[s_id].name  ) )
     
 def alert(s):
@@ -198,6 +198,7 @@ def find_state(name):
 
 def exit(s):
     print('Cleaning up. \n Exiting....')
+    time.sleep(60)
     say('goodbye')
     os._exit(-1)
     sys.exit('Cleaning up. \n Exiting....')
@@ -229,10 +230,10 @@ def say(s):
     engine.setProperty('voice', 'english-us')
     #print voice.id
     engine.say(s)
-    try:
-        a = engine.runAndWait() #blocks                 
-    except RuntimeError:
-        print('busy')
+    #try:
+    a = engine.runAndWait() #blocks                 
+    #except RuntimeError:
+    #    print('busy')
         
 say("hello, timed automata starting")
 
@@ -247,30 +248,52 @@ clock_time=time.time()
 s_id = find_state(cur_state)
 states[s_id].setup()
 
-while True:
-    ins = listen()
-    say("new input provided: %s" % ins)
-    line= ins.split()
-    s_id= find_state(cur_state)
-    try:
-        a = line[0]
-        method_to_call = getattr(defs, a)
-        method_to_call(line, states, s_id)
-    except AttributeError:
-        print('not found in custom trying local functions')
+if os.fork():
+    while True:
+        ins = listen()
+        say(ins)
+        line= ins.split()
+        s_id= find_state(cur_state)
         try:
             a = line[0]
-            eval(a+'(line)')
-        except NameError:
-            print('exception caught, looking in guards')
+            method_to_call = getattr(defs, a)
+            method_to_call(line, states, s_id)
+        except AttributeError:
+            print('not found in custom trying local functions')
+            try:
+                a = line[0]
+                eval(a+'(line)')
+            except NameError:
+                print('exception caught, looking in guards')
+                s_id = find_state(cur_state)
+                if line[1] == 'int':
+                    states[s_id].guards[line[0]] = int(line[2])
+                if line[1] == 'float':
+                    states[s_id].guards[line[0]] = float(line[2])
+                if line[1] == 'str':
+                    states[s_id].guards[line[0]] = str(line[2])
+        print_states('a')
+        # update continuous variables
+        
+        method_to_call = getattr(defs, 'update')
+        u = method_to_call(cur_state,str(int(time.time()-clock_time)))
+        # now we have a list of updates for our current state
+        if u:
+            updates = u.split()
             s_id = find_state(cur_state)
-            if line[1] == 'int':
-                states[s_id].guards[line[0]] = int(line[2])
-            if line[1] == 'float':
-                states[s_id].guards[line[0]] = float(line[2])
-            if line[1] == 'str':
-                states[s_id].guards[line[0]] = str(line[2])
-    print_states('a')
-    #check if we can transition
-    transition_state()
-    check_final('a')
+            #update one by one
+            for i in updates:
+                line = i.split(':')
+                
+                if line[1] == 'int':
+                    states[s_id].guards[line[0]] = int(line[2])
+                if line[1] == 'float':
+                    states[s_id].guards[line[0]] = float(line[2])
+                if line[1] == 'str':
+                    states[s_id].guards[line[0]] = str(line[2])
+    
+            #check if we can transition
+            transition_state()
+            # check if we have arrived at final state
+            check_final('a')
+time.sleep(10000)
