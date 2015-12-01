@@ -1,0 +1,10 @@
+#!/usr/bin/python
+##########################
+#  channon@hawk.iit.edu  #
+##########################
+
+import pywapi
+
+delta = pywapi.get_weather_from_noaa('KORD')['wind_mph']
+
+print delta
