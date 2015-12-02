@@ -22,7 +22,7 @@ def update(state,time):
         rst+= 'beta:float:%s '%beta
         if beta > 50:
             rst += 'charlie:int:1 '
-        elif pywapi.get_weather_from_noaa('KORD')['temp_c'] < 5:
+        elif float(pywapi.get_weather_from_noaa('KORD')['temp_c']) < 5.0:
             rst += 'charlie:int:-1 '
         
     if state == 'b':

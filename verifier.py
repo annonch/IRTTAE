@@ -198,7 +198,7 @@ def find_state(name):
 
 def exit(s):
     print('Cleaning up. \n Exiting....')
-    time.sleep(60)
+    time.sleep(2)
     say('goodbye')
     os._exit(-1)
     sys.exit('Cleaning up. \n Exiting....')
