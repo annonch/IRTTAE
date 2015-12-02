@@ -2,7 +2,7 @@
 
 import pywapi
 
-weather_com_result = pywapi.get_weather_from_weather_com('10001')
+weather_com_result = pywapi.get_weather_from_weather_com('60616')
 yahoo_result = pywapi.get_weather_from_yahoo('10001')
 noaa_result = pywapi.get_weather_from_noaa('KJFK')
 

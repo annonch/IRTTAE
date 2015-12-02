@@ -27,7 +27,7 @@ def update(state,time):
         
     if state == 'b':
         delta = pywapi.get_weather_from_noaa('KORD')['wind_mph']
-        rst+= 'delta:int:%s '% delta
+        rst+= 'delta:float:%s '% delta
     return rst
 
 def transition_handl():
