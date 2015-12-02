@@ -5,7 +5,8 @@
 
 #from verifier import *
 
-import pywapi
+#import pywapi
+import time
 
 def test(strr,states,cur_state):
     print('testing %s ' %strr)
@@ -17,18 +18,14 @@ def update(state,time):
     print time
     t=float(time)
     rst=''
-    if state == 'a':
-        beta = t * 2.2
-        rst+= 'beta:float:%s '%beta
-        if beta > 100:
-            rst += 'charlie:int:1 '
-        elif float(pywapi.get_weather_from_noaa('KORD')['temp_c']) > 5.0:
-            rst += 'charlie:int:-1 '
+    if state == 's3':
+        glucose = get_external_reading('g')
+        rst+= 'glucose:float:%s '%glucose
         
-    if state == 'b':
-        delta = pywapi.get_weather_from_noaa('KORD')['wind_mph']
-        rst+= 'delta:float:%s '% delta
     return rst
 
 def transition_handl():
     print('transition routine complete')
+
+def get_external_reading(s):
+    return time.time()
